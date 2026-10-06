@@ -1,0 +1,40 @@
+manifestVersion: 1
+id: josh-amp
+name: AMP
+tagline: Run and manage game servers from one web panel
+icon: https://github.com/CubeCoders.png
+category: gaming
+version: "1.0.0"
+port: 8471
+description: >-
+  AMP (Application Management Panel) by CubeCoders lets you create and manage game
+  servers such as Minecraft, Valheim, Terraria, Factorio and many more from a web panel.
+
+
+  A CubeCoders AMP licence key is required. Buy one at https://cubecoders.com/AMP and
+  enter it the first time you open the app.
+
+
+  Sign in with the username "admin" and the password shown on this page.
+
+
+  Open ports: Minecraft Java 25565-25570 (TCP and UDP) and Minecraft Bedrock 19132 (UDP).
+  When you create a Minecraft server in AMP, give it one of these ports. To let friends
+  outside your home join, forward the port on your router.
+
+
+  This app uses the community-made AMP-dockerized image. It is not made or supported by
+  CubeCoders, so please do not contact CubeCoders for help with it.
+developer: CubeCoders
+website: https://cubecoders.com/AMP
+submitter: Josh
+submission: https://github.com/MitchTalmadge/AMP-dockerized
+repo: https://github.com/MitchTalmadge/AMP-dockerized
+support: https://github.com/MitchTalmadge/AMP-dockerized/issues
+gallery: []
+releaseNotes: >-
+  First release.
+dependencies: []
+path: ""
+defaultUsername: "admin"
+deterministicPassword: true
