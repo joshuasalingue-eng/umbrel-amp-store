@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gluetun</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#16181d; --muted:#667085; --line:#e4e7ec; --ok:#12805c; --bad:#c4320a; --wait:#b54708; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f1115; --card:#181b21; --text:#eef0f3; --muted:#98a2b3; --line:#2a2f38; --ok:#32d583; --bad:#f97066; --wait:#fdb022; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:560px; margin:0 auto; padding:32px 16px; }
+  h1 { font-size:22px; margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
+  .status { display:flex; align-items:center; gap:12px; font-size:18px; font-weight:600; }
+  .dot { width:14px; height:14px; border-radius:50%; background:var(--wait); flex:none; }
+  .ok .dot { background:var(--ok); } .bad .dot { background:var(--bad); }
+  .hint { color:var(--muted); margin:8px 0 0; font-size:14px; }
+  dl { display:grid; grid-template-columns:auto 1fr; gap:8px 16px; margin:0; }
+  dt { color:var(--muted); } dd { margin:0; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+  h2 { font-size:15px; margin:0 0 12px; }
+  code { background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-size:14px; }
+  footer { color:var(--muted); font-size:13px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Gluetun VPN</h1>
+
+  <div class="card" id="statusCard">
+    <div class="status"><span class="dot"></span><span id="statusText">Checking…</span></div>
+    <p class="hint" id="statusHint"></p>
+  </div>
+
+  <div class="card">
+    <h2>Connection</h2>
+    <dl>
+      <dt>Public IP</dt><dd id="ip">–</dd>
+      <dt>Location</dt><dd id="loc">–</dd>
+      <dt>Network</dt><dd id="org">–</dd>
+      <dt>Forwarded port</dt><dd id="port">–</dd>
+    </dl>
+  </div>
+
+  <div class="card">
+    <h2>Use the VPN</h2>
+    <p class="hint" style="margin:0">Set an app or device's HTTP proxy to <code id="proxy">umbrel.local:8888</code>. Its traffic then goes through the VPN.</p>
+  </div>
+
+  <footer id="version">Refreshes every 10 seconds</footer>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  // Umbrel may serve this page on an app subdomain (e.g. gluetun.umbrel.local); the proxy is on the Umbrel itself
+  const h = location.hostname;
+  const host = /^[\d.]+$/.test(h) ? h : (h.endsWith(".local") ? h.split(".").slice(-2).join(".") : h);
+  $("proxy").textContent = host + ":8888";
+
+  async function get(path) {
+    const r = await fetch("api/" + path, { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  }
+
+  function setStatus(kind, text, hint) {
+    $("statusCard").className = "card " + kind;
+    $("statusText").textContent = text;
+    $("statusHint").textContent = hint || "";
+  }
+
+  async function refresh() {
+    let vpn;
+    try {
+      vpn = await get("vpn/status");
+    } catch (e) {
+      setStatus("bad", "Gluetun isn't responding",
+        "It may still be starting, or your VPN settings need fixing. In Umbrel, open App Settings > Advanced > View logs for details.");
+      ["ip", "loc", "org", "port"].forEach((id) => $(id).textContent = "–");
+      return;
+    }
+
+    if (vpn.status === "running") {
+      setStatus("ok", "Connected", "");
+    } else {
+      setStatus("wait", "Not connected (" + (vpn.status || "unknown") + ")",
+        "Gluetun is trying to connect. If this doesn't change, check your VPN settings in App Settings > Advanced > Environment variables.");
+    }
+
+    try {
+      const ip = await get("publicip/ip");
+      $("ip").textContent = ip.public_ip || "–";
+      $("loc").textContent = [ip.city, ip.region, ip.country].filter(Boolean).join(", ") || "–";
+      $("org").textContent = ip.organization || "–";
+    } catch (e) {}
+
+    try {
+      const pf = await get("portforward");
+      const ports = (pf.ports && pf.ports.length) ? pf.ports : (pf.port ? [pf.port] : []);
+      $("port").textContent = ports.join(", ") || "None";
+    } catch (e) { $("port").textContent = "None"; }
+
+    try {
+      const v = await get("version");
+      $("version").textContent = "Gluetun " + (v.version || "") + " · refreshes every 10 seconds";
+    } catch (e) {}
+  }
+
+  refresh();
+  setInterval(refresh, 10000);
+</script>
+</body>
+</html>

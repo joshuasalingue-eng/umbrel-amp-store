@@ -1,0 +1,49 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      # Format: <app-id>_<service-name>_1
+      APP_HOST: josh-gluetun_web_1
+      APP_PORT: 8080
+      # Keep Umbrel's login in front of the status page
+
+  # Small status page that shows whether the VPN is connected
+  web:
+    image: nginx:1.30.5-alpine@sha256:bf3201ab56f23e5954646379c775d511fc466e9f11376d9725361064ad07ed35
+    user: "1000:1000"
+    entrypoint: ["nginx"]
+    command: ["-g", "daemon off;"]
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ${APP_DATA_DIR}/web/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${APP_DATA_DIR}/web/index.html:/web/index.html:ro
+    restart: on-failure
+
+  # The VPN client. Set your VPN details in Umbrel:
+  # App Settings > Advanced > Environment variables
+  gluetun:
+    image: qmcgaw/gluetun:v3.41.3
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      TZ: "America/Chicago"
+      HTTPPROXY: "on"
+      SHADOWSOCKS: "off"
+      UPDATER_PERIOD: "24h"
+      # Only lets the status page read VPN status (see data/auth/config.toml)
+      HTTP_CONTROL_SERVER_AUTH_CONFIG_FILEPATH: "/gluetun/auth/config.toml"
+    ports:
+      # HTTP proxy: point apps or devices at <umbrel-ip>:8888
+      - "8888:8888/tcp"
+      # Shadowsocks proxy (off unless you turn it on)
+      - "8388:8388/tcp"
+      - "8388:8388/udp"
+    volumes:
+      - ${APP_DATA_DIR}/data:/gluetun
+    stop_grace_period: 30s
+    restart: on-failure

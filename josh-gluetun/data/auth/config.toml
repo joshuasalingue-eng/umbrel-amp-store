@@ -1,0 +1,11 @@
+# Lets the Umbrel status page read the VPN status without a password.
+# Everything else on Gluetun's control server stays locked.
+[[roles]]
+name = "umbrel-status-page"
+auth = "none"
+routes = [
+  "GET /v1/vpn/status",
+  "GET /v1/publicip/ip",
+  "GET /v1/version",
+  "GET /v1/portforward",
+]

@@ -1,0 +1,116 @@
+manifestVersion: 1
+id: josh-gluetun
+name: Gluetun
+tagline: VPN client with a built-in proxy for your other apps and devices
+icon: https://raw.githubusercontent.com/passteque/gluetun/master/doc/logo_256.png
+category: networking
+version: "3.41.3"
+port: 8462
+description: >-
+  Gluetun connects your Umbrel to your VPN provider (NordVPN, Mullvad, ProtonVPN,
+  Surfshark, PIA and many more) and shares that connection through a built-in HTTP proxy.
+  Point an app or device at the proxy and its traffic goes through the VPN. If the VPN
+  drops, Gluetun's kill switch blocks the traffic instead of leaking it.
+
+
+  Setup: after installing, open App Settings > Advanced > Environment variables and fill
+  in VPN_SERVICE_PROVIDER, VPN_TYPE and your VPN login (OpenVPN username and password, or
+  WireGuard key and address). Your provider's details are in the Gluetun wiki:
+  https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers
+
+
+  Opening the app shows a status page with the VPN's public IP and location.
+
+
+  HTTP proxy: <your-umbrel-ip>:8888. Shadowsocks proxy: port 8388 (off by default).
+developer: Quentin McGaw
+website: https://github.com/passteque/gluetun
+submitter: Josh
+submission: https://github.com/passteque/gluetun
+repo: https://github.com/passteque/gluetun
+support: https://github.com/passteque/gluetun/discussions
+gallery: []
+releaseNotes: >-
+  First release, using Gluetun v3.41.3.
+dependencies: []
+path: ""
+environment:
+  - name: VPN_SERVICE_PROVIDER
+    services: [gluetun]
+    options:
+      - airvpn
+      - custom
+      - cyberghost
+      - expressvpn
+      - fastestvpn
+      - giganews
+      - hidemyass
+      - ipvanish
+      - ivpn
+      - mullvad
+      - nordvpn
+      - privado
+      - private internet access
+      - privatevpn
+      - protonvpn
+      - purevpn
+      - slickvpn
+      - surfshark
+      - torguard
+      - vpnsecure
+      - vpn unlimited
+      - vyprvpn
+      - windscribe
+    note: Your VPN company. Pick "custom" to use your own WireGuard or OpenVPN config.
+  - name: VPN_TYPE
+    services: [gluetun]
+    default: openvpn
+    options: [openvpn, wireguard]
+    note: OpenVPN works with every provider. WireGuard is faster but not every provider supports it.
+  - name: OPENVPN_USER
+    services: [gluetun]
+    note: For OpenVPN. This is usually a special "service" or "manual setup" username from your VPN account page, not your normal login.
+  - name: OPENVPN_PASSWORD
+    services: [gluetun]
+    note: For OpenVPN. The password that goes with the username above.
+  - name: WIREGUARD_PRIVATE_KEY
+    services: [gluetun]
+    note: For WireGuard. The private key from your VPN provider's WireGuard setup page.
+  - name: WIREGUARD_ADDRESSES
+    services: [gluetun]
+    note: For WireGuard. The address your provider gives you, for example 10.64.222.21/32. Not needed for every provider.
+  - name: WIREGUARD_PRESHARED_KEY
+    services: [gluetun]
+    note: For WireGuard. Only if your provider gives you a preshared key.
+  - name: SERVER_COUNTRIES
+    services: [gluetun]
+    note: Optional. Countries to connect to, separated by commas, for example Netherlands,Germany.
+  - name: SERVER_CITIES
+    services: [gluetun]
+    note: Optional. Cities to connect to, separated by commas.
+  - name: HTTPPROXY
+    services: [gluetun]
+    default: "on"
+    options: ["on", "off"]
+    note: Built-in HTTP proxy on port 8888 that sends traffic through the VPN.
+  - name: HTTPPROXY_USER
+    services: [gluetun]
+    note: Optional. Require this username to use the HTTP proxy.
+  - name: HTTPPROXY_PASSWORD
+    services: [gluetun]
+    note: Optional. Require this password to use the HTTP proxy.
+  - name: SHADOWSOCKS
+    services: [gluetun]
+    default: "off"
+    options: ["on", "off"]
+    note: Shadowsocks proxy on port 8388. Turn on only if you use a Shadowsocks client.
+  - name: SHADOWSOCKS_PASSWORD
+    services: [gluetun]
+    note: Password for the Shadowsocks proxy.
+  - name: FIREWALL_OUTBOUND_SUBNETS
+    services: [gluetun]
+    note: Optional. Your home network, for example 192.168.1.0/24, if traffic through Gluetun needs to reach devices on it.
+  - name: TZ
+    services: [gluetun]
+    default: America/Chicago
+    note: Timezone used for log times.
